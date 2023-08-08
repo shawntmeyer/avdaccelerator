@@ -350,6 +350,9 @@ param avdApplicationSecurityGroupCustomName string = 'asg-app1-dev-use2-001'
 @sys.description('AVD workspace custom name. (Default: vdws-app1-dev-use2-001)')
 param avdWorkSpaceCustomName string = 'vdws-app1-dev-use2-001'
 
+@sys.description('Existing Azure Virtual Desktop Workspace Resource ID. (Default: "")')
+param existingAVDWorkspaceResourceId string = ''
+
 @maxLength(64)
 @sys.description('AVD workspace custom friendly (Display) name. (Default: App1 - Dev - East US 2 - 001)')
 param avdWorkSpaceCustomFriendlyName string = 'App1 - Dev - East US 2 - 001'
@@ -516,8 +519,8 @@ var varPrivateEndpointNetworksecurityGroupName = avdUseCustomNaming ? privateEnd
 var varAvdRouteTableName = avdUseCustomNaming ? avdRouteTableCustomName : 'route-avd-${varComputeStorageResourcesNamingStandard}-001'
 var varPrivateEndpointRouteTableName = avdUseCustomNaming ? privateEndpointRouteTableCustomName : 'route-pe-${varComputeStorageResourcesNamingStandard}-001'
 var varApplicationSecurityGroupName = avdUseCustomNaming ? avdApplicationSecurityGroupCustomName : 'asg-${varComputeStorageResourcesNamingStandard}-001'
-var varWorkSpaceName = avdUseCustomNaming ? avdWorkSpaceCustomName : 'vdws-${varManagementPlaneNamingStandard}-001'
-var varWorkSpaceFriendlyName = avdUseCustomNaming ? avdWorkSpaceCustomFriendlyName : 'Workspace ${deploymentPrefix} ${deploymentEnvironment} ${avdManagementPlaneLocation} 001'
+var varWorkSpaceName = empty(existingAVDWorkspaceResourceId) ? avdUseCustomNaming ? avdWorkSpaceCustomName : 'vdws-${varManagementPlaneNamingStandard}-001' : ''
+var varWorkSpaceFriendlyName = empty(existingAVDWorkspaceResourceId) ? avdUseCustomNaming ? avdWorkSpaceCustomFriendlyName : 'Workspace ${deploymentPrefix} ${deploymentEnvironment} ${avdManagementPlaneLocation} 001': ''
 var varHostPoolName = avdUseCustomNaming ? avdHostPoolCustomName : 'vdpool-${varManagementPlaneNamingStandard}-001'
 var varHostFriendlyName = avdUseCustomNaming ? avdHostPoolCustomFriendlyName : 'Hostpool ${deploymentPrefix} ${deploymentEnvironment} ${avdManagementPlaneLocation} 001'
 var varApplicationGroupName = avdUseCustomNaming ? avdApplicationGroupCustomName : 'vdag-${hostPoolPreferredAppGroupType}-${varManagementPlaneNamingStandard}-001'
@@ -914,6 +917,7 @@ module managementPLane './modules/avdManagementPlane/deploy.bicep' = {
     params: {
         applicationGroupName: varApplicationGroupName
         applicationGroupFriendlyNameDesktop: varApplicationGroupFriendlyName
+        existingAVDWorkspaceResourceId: existingAVDWorkspaceResourceId
         workSpaceName: varWorkSpaceName
         osImage: avdOsImage
         workSpaceFriendlyName: varWorkSpaceFriendlyName
