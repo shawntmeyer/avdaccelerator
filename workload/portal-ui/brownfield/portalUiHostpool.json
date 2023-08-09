@@ -1590,6 +1590,7 @@
                                     "type": "Microsoft.Common.TextBox",
                                     "label": "Resource group",
                                     "toolTip": "Azure Virtual Desktop management plane resources (Workspace, Host pool, Application groups, Key vault) resource group custom name.",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, true)]",
                                     "placeholder": "Example: rg-avd-app1-dev-use2-service-objects",
                                     "constraints": {
                                         "required": true,
