@@ -491,7 +491,9 @@ param enableTelemetry bool = true
 var varDeploymentPrefixLowercase = toLower(deploymentPrefix)
 var varDeploymentEnvironmentLowercase = toLower(deploymentEnvironment)
 var varDeploymentEnvironmentComputeStorage = (deploymentEnvironment == 'Dev') ? 'd': ((deploymentEnvironment == 'Test') ? 't' : ((deploymentEnvironment == 'Prod') ? 'p' : ''))
-var varNamingUniqueStringThreeChar = take('${uniqueString(avdWorkloadSubsId, varDeploymentPrefixLowercase, time)}', 3)
+var varNamingUniqueStringThreeCharServiceObjectRG = take('${uniqueString(avdWorkloadSubsId, varDeploymentPrefixLowercase, varServiceObjectsRgName)}', 3)
+var varNamingUniqueStringThreeCharStorageRG = take('${uniqueString(avdWorkloadSubsId, varDeploymentPrefixLowercase, varComputeStorageResourcesNamingStandard)}', 3)
+var varNamingUniqueStringThreeCharComputeRG = take('${uniqueString(avdWorkloadSubsId, varDeploymentPrefixLowercase, varComputeObjectsRgName)}', 3)
 var varSessionHostLocationAcronym = varLocations[varSessionHostLocationLowercase].acronym
 var varManagementPlaneLocationAcronym = varLocations[varManagementPlaneLocationLowercase].acronym
 var varLocations = loadJsonContent('../variables/locations.json')
@@ -529,7 +531,7 @@ var varScalingPlanName = avdUseCustomNaming ? avdScalingPlanCustomName : 'vdscal
 var varScalingPlanExclusionTag = 'exclude-${varScalingPlanName}'
 var varScalingPlanWeekdaysScheduleName = 'Weekdays-${varManagementPlaneNamingStandard}'
 var varScalingPlanWeekendScheduleName = 'Weekend-${varManagementPlaneNamingStandard}'
-var varWrklKvName = avdUseCustomNaming ? '${avdWrklKvPrefixCustomName}-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeChar}' : 'kv-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeChar}' // max length limit 24 characters
+var varWrklKvName = avdUseCustomNaming ? '${avdWrklKvPrefixCustomName}-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeCharServiceObjectRG}' : 'kv-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeCharServiceObjectRG}' // max length limit 24 characters
 var varWrklKvPrivateEndpointName = 'pe-${varWrklKvName}-vault'
 var varSessionHostNamePrefix = avdUseCustomNaming ? avdSessionHostCustomNamePrefix : 'vm${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varSessionHostLocationAcronym}'
 var varAvsetNamePrefix = avdUseCustomNaming ? '${avsetCustomNamePrefix}-${varComputeStorageResourcesNamingStandard}' : 'avail-${varComputeStorageResourcesNamingStandard}'
@@ -537,13 +539,13 @@ var varStorageManagedIdentityName = 'id-storage-${varComputeStorageResourcesNami
 var varCleanUpManagedIdentityName = 'id-cleanup-${varComputeStorageResourcesNamingStandard}-001'
 var varFslogixFileShareName = avdUseCustomNaming ? fslogixFileShareCustomName : 'fslogix-pc-${varDeploymentPrefixLowercase}-${varDeploymentEnvironmentLowercase}-${varSessionHostLocationAcronym}-001'
 var varMsixFileShareName = avdUseCustomNaming ? msixFileShareCustomName : 'msix-pc-${varDeploymentPrefixLowercase}-${varDeploymentEnvironmentLowercase}-${varSessionHostLocationAcronym}-001'
-var varFslogixStorageName = avdUseCustomNaming ? '${storageAccountPrefixCustomName}fsl${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeChar}' : 'stfsl${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeChar}'
-var varMsixStorageName = avdUseCustomNaming ? '${storageAccountPrefixCustomName}msx${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeChar}' : 'stmsx${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeChar}'
+var varFslogixStorageName = avdUseCustomNaming ? '${storageAccountPrefixCustomName}fsl${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeCharStorageRG}' : 'stfsl${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeCharStorageRG}'
+var varMsixStorageName = avdUseCustomNaming ? '${storageAccountPrefixCustomName}msx${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeCharStorageRG}' : 'stmsx${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varNamingUniqueStringThreeCharStorageRG}'
 //var varAvdMsixStorageName = deployAvdMsixStorageAzureFiles.outputs.storageAccountName
 var varManagementVmName = 'vmmgmt${varDeploymentPrefixLowercase}${varDeploymentEnvironmentComputeStorage}${varSessionHostLocationAcronym}'
 //var varAvdWrklStoragePrivateEndpointName = 'pe-stavd${varDeploymentPrefixLowercase}${varAvdNamingUniqueStringSixChar}-file'
 var varAlaWorkspaceName = avdUseCustomNaming ? avdAlaWorkspaceCustomName : 'log-avd-${varDeploymentEnvironmentLowercase}-${varManagementPlaneLocationAcronym}' //'log-avd-${varAvdComputeStorageResourcesNamingStandard}-${varAvdNamingUniqueStringSixChar}'
-var varZtKvName = avdUseCustomNaming ? '${ztKvPrefixCustomName}-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeChar}' : 'kv-zt-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeChar}' // max length limit 24 characters
+var varZtKvName = avdUseCustomNaming ? '${ztKvPrefixCustomName}-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeCharComputeRG}' : 'kv-zt-${varComputeStorageResourcesNamingStandard}-${varNamingUniqueStringThreeCharComputeRG}' // max length limit 24 characters
 var varZtKvPrivateEndpointName = 'pe-${varZtKvName}-vault'
 //
 var varFsLogixScriptArguments = (avdIdentityServiceProvider == 'AAD') ? '-volumeshare ${varFslogixSharePath} -storageAccountName ${varFslogixStorageName} -identityDomainName ${avdIdentityDomainName}' : '-volumeshare ${varFslogixSharePath}'
@@ -1009,12 +1011,18 @@ module zeroTrust './modules/zeroTrust/deploy.bicep' = if (diskZeroTrust && avdDe
 }
 
 // Key vault
+
+resource wrklKeyVault_ex 'Microsoft.KeyVault/vaults@2023-02-01' existing = if(!empty(existingAVDWorkspaceResourceId)) {
+    scope: resourceGroup('${avdWorkloadSubsId}', '${varServiceObjectsRgName}')
+    name: varWrklKvName
+}
+
 module wrklKeyVault '../../carml/1.3.0/Microsoft.KeyVault/vaults/deploy.bicep' = {
     scope: resourceGroup('${avdWorkloadSubsId}', '${varServiceObjectsRgName}')
     name: 'Workload-KeyVault-${time}'
     params: {
         name: varWrklKvName
-        location: avdSessionHostLocation
+        location: avdManagementPlaneLocation
         enableRbacAuthorization: false
         enablePurgeProtection: true
         softDeleteRetentionInDays: 7
@@ -1038,51 +1046,6 @@ module wrklKeyVault '../../carml/1.3.0/Microsoft.KeyVault/vaults/deploy.bicep' =
                 }
             }
         ] : []
-        secrets: {
-            secureList: (avdIdentityServiceProvider != 'AAD') ? [
-                {
-                    name: 'vmLocalUserPassword'
-                    value: avdVmLocalUserPassword
-                    contentType: 'Session host local user credentials'
-                }
-                {
-                    name: 'vmLocalUserName'
-                    value: avdVmLocalUserName
-                    contentType: 'Session host local user credentials'
-                }
-                {
-                    name: 'domainJoinUserName'
-                    value: avdDomainJoinUserName
-                    contentType: 'Domain join credentials'
-                }
-                {
-                    name: 'domainJoinUserPassword'
-                    value: avdDomainJoinUserPassword
-                    contentType: 'Domain join credentials'
-                }
-            ] : [
-                {
-                    name: 'vmLocalUserPassword'
-                    value: avdVmLocalUserPassword
-                    contentType: 'Session host local user credentials'
-                }
-                {
-                    name: 'vmLocalUserName'
-                    value: avdVmLocalUserName
-                    contentType: 'Session host local user credentials'
-                }
-                {
-                    name: 'domainJoinUserName'
-                    value: 'AAD-Joined-Deployment-No-Domain-Credentials'
-                    contentType: 'Domain join credentials'
-                }
-                {
-                    name: 'domainJoinUserPassword'
-                    value: 'AAD-Joined-Deployment-No-Domain-Credentials'
-                    contentType: 'Domain join credentials'
-                }
-            ]
-        }
         tags: createResourceTags ? union(varCustomResourceTags, varAvdDefaultTags) : varAvdDefaultTags
 
     }
@@ -1090,6 +1053,47 @@ module wrklKeyVault '../../carml/1.3.0/Microsoft.KeyVault/vaults/deploy.bicep' =
         baselineResourceGroups
         monitoringDiagnosticSettings
     ]
+}
+
+// Had to break out secrets from parent in order to keep them idempotent with the deployment of a different hostpool identity type and also the GetSecret() function only works on the Secure String Parameter type, not Secure Object type. (avoids BICEP error BCP180)
+module secretDomainJoinUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
+    scope: resourceGroup('${avdWorkloadSubsId}', '${varServiceObjectsRgName}')
+    name: 'Workload-KeyVault-Secret-domainJoinUserName-${time}'
+    params: {
+        name: 'domainJoinUserName'
+        keyVaultName: varWrklKvName
+        value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserName : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserName') : 'AAD-Joined-Deployment-No-Domain-Credentials'
+    }
+}
+
+module secretDomainJoinUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
+    scope: resourceGroup('${avdWorkloadSubsId}', '${varServiceObjectsRgName}')
+    name: 'Workload-KeyVault-Secret-domainJoinUserPassword-${time}'
+    params: {
+        name: 'domainJoinUserPassword'
+        keyVaultName: varWrklKvName
+        value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserPassword : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserPassword') : 'AAD-Joined-Deployment-No-Domain-Credentials'
+    }
+}
+
+module secretVmLocalUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
+    scope: resourceGroup('${avdWorkloadSubsId}', '${varServiceObjectsRgName}')
+    name: 'Workload-KeyVault-Secret-vmLocalUserName-${time}'
+    params: {
+        name: 'vmLocalUserName'
+        keyVaultName: varWrklKvName
+        value: avdVmLocalUserName
+    }
+}
+
+module secretVmLocalUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
+    scope: resourceGroup('${avdWorkloadSubsId}', '${varServiceObjectsRgName}')
+    name: 'Workload-KeyVault-Secret-vmLocalUserPassword-${time}'
+    params: {
+        name: 'vmLocalUserPassword'
+        keyVaultName: varWrklKvName
+        value: avdVmLocalUserPassword
+    }
 }
 
 // Management VM deployment

@@ -336,6 +336,15 @@
                                     }
                                 },
                                 {
+                                    "name": "avdWorkspaceWarning",
+                                    "type": "Microsoft.Common.InfoBox",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, false)]",
+                                    "options": {
+                                        "text": "When using an existing workspace, all new management plane resources will be deployed to the same resource group as the existing workspace.",
+                                        "style": "Warning"
+                                    }
+                                },
+                                {
                                     "name": "avdExistingWorkspaceSelection",
                                     "type": "Microsoft.Solutions.ResourceSelector",
                                     "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, false)]",
