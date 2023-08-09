@@ -100,6 +100,9 @@ param time string = utcNow()
 // Variable declaration //
 // =========== //
 var varAzureCloudName = environment().name
+var varStorageSuffix = environment().suffixes.storage
+var varVaultSuffix = environment().suffixes.keyvaultDns
+
 var varNetworkSecurityGroupDiagnostic = [
     'allLogs'
 ]
@@ -371,53 +374,32 @@ module virtualNetwork '../../../../carml/1.3.0/Microsoft.Network/virtualNetworks
     ] : []
 }
 
-// Private DNS zones Azure files commercial
-module privateDnsZoneAzureFilesCommercial '.bicep/privateDnsZones.bicep' = if (createPrivateDnsZones && (varAzureCloudName == 'AzureCloud')) {
+// Private DNS zones Azure files
+module privateDnsZoneAzureFiles '.bicep/privateDnsZones.bicep' = if (createPrivateDnsZones) {
     scope: resourceGroup('${workloadSubsId}', '${networkObjectsRgName}')
-    name: 'Private-DNS-Comm-Files-${time}'
+    name: 'Private-DNS-Files-${time}'
     params: {
-        privateDnsZoneName: 'privatelink.file.core.windows.net'
+        privateDnsZoneName: 'privatelink.file.${varStorageSuffix}'
         virtualNetworkResourceId: createVnet ? virtualNetwork.outputs.resourceId : varExistingAvdVnetResourceId
         tags: tags
     }
 }
 
-// Private DNS zones key vault commercial
-module privateDnsZoneKeyVaultCommercial '.bicep/privateDnsZones.bicep' = if (createPrivateDnsZones && (varAzureCloudName == 'AzureCloud')) {
+// Private DNS zones key vault
+module privateDnsZoneKeyVault '.bicep/privateDnsZones.bicep' = if (createPrivateDnsZones) {
     scope: resourceGroup('${workloadSubsId}', '${networkObjectsRgName}')
-    name: 'Private-DNS-Comm-Kv-${time}'
+    name: 'Private-DNS-Kv-${time}'
     params: {
-        privateDnsZoneName: 'privatelink.vaultcore.azure.net'
+        privateDnsZoneName: 'privatelink.${varVaultSuffix}'
         virtualNetworkResourceId: createVnet ? virtualNetwork.outputs.resourceId : varExistingAvdVnetResourceId
         tags: tags
     }
 }
 
-// Private DNS zones Azure files US goverment
-module privateDnsZoneAzureFilesGov '.bicep/privateDnsZones.bicep' = if (createPrivateDnsZones && (varAzureCloudName == 'AzureUSGovernment')) {
-    scope: resourceGroup('${workloadSubsId}', '${networkObjectsRgName}')
-    name: 'Private-DNS-Gov-Files-${time}'
-    params: {
-        privateDnsZoneName: 'privatelink.file.core.usgovcloudapi.net'
-        virtualNetworkResourceId: createVnet ? virtualNetwork.outputs.resourceId : varExistingAvdVnetResourceId
-        tags: tags
-    }
-}
-
-// Private DNS zones key vault US goverment
-module privateDnsZoneKeyVaultGov '.bicep/privateDnsZones.bicep' = if (createPrivateDnsZones && (varAzureCloudName == 'AzureUSGovernment')) {
-    scope: resourceGroup('${workloadSubsId}', '${networkObjectsRgName}')
-    name: 'Private-DNS-Gov-Kv-${time}'
-    params: {
-        privateDnsZoneName: 'privatelink.vaultcore.usgovcloudapi.net'
-        virtualNetworkResourceId: createVnet ? virtualNetwork.outputs.resourceId : varExistingAvdVnetResourceId
-        tags: tags
-    }
-}
 // =========== //
 // Outputs //
 // =========== //
 output applicationSecurityGroupResourceId string = deployAsg ? applicationSecurityGroup.outputs.resourceId : ''
 output virtualNetworkResourceId string = createVnet ? virtualNetwork.outputs.resourceId : ''
-output azureFilesDnsZoneResourceId string = createPrivateDnsZones ? ((varAzureCloudName == 'AzureCloud') ? privateDnsZoneAzureFilesCommercial.outputs.resourceId : privateDnsZoneAzureFilesGov.outputs.resourceId) : ''
-output KeyVaultDnsZoneResourceId string = createPrivateDnsZones ? ((varAzureCloudName == 'AzureCloud') ? privateDnsZoneKeyVaultCommercial.outputs.resourceId : privateDnsZoneKeyVaultGov.outputs.resourceId) : ''
+output azureFilesDnsZoneResourceId string = createPrivateDnsZones ? privateDnsZoneAzureFiles.outputs.resourceId : ''
+output KeyVaultDnsZoneResourceId string = createPrivateDnsZones ? privateDnsZoneKeyVault.outputs.resourceId : ''

@@ -48,11 +48,14 @@ param scalingPlanName string
 @sys.description('AVD scaling plan schedules')
 param scalingPlanSchedules array
 
-@sys.description('AVD workspace name.')
-param workSpaceName string
+@sys.description('Existing AVD Workspace ResourceID. Brownfield Scenario. (Default: "")')
+param existingAVDWorkspaceResourceId string = ''
 
-@sys.description('AVD workspace friendly name.')
-param workSpaceFriendlyName string
+@sys.description('AVD workspace name. (Default: "")')
+param workSpaceName string = ''
+
+@sys.description('AVD workspace friendly name. (Default: "")')
+param workSpaceFriendlyName string = ''
 
 @sys.description('AVD host pool Custom RDP properties.')
 param hostPoolRdpProperties string
@@ -110,7 +113,11 @@ param time string = utcNow()
 // =========== //
 // Variable declaration //
 // =========== //
-var varApplicaitonGroups = [
+
+var varAVDWorkspaceName = empty(existingAVDWorkspaceResourceId) ? workSpaceName : last(split(existingAVDWorkspaceResourceId, '/'))
+var varServiceObjectsRgName = empty(existingAVDWorkspaceResourceId) ? serviceObjectsRgName : split(existingAVDWorkspaceResourceId, '/')[4]
+
+var varApplicationGroups = [
   {
     name: applicationGroupName
     friendlyName: applicationGroupFriendlyNameDesktop
@@ -118,6 +125,12 @@ var varApplicaitonGroups = [
     applicationGroupType: (preferredAppGroupType == 'Desktop') ? 'Desktop' : 'RemoteApp'
   }
 ]
+var varApplicationGroupId = '/subscriptions/${workloadSubsId}/resourceGroups/${serviceObjectsRgName}/providers/Microsoft.DesktopVirtualization/applicationgroups/${applicationGroupName}'
+
+var varApplicationGroupIds = empty(existingAVDWorkspaceResourceId) ? [
+  varApplicationGroupId
+] : contains(workSpace_Existing.properties.applicationGroupReferences, varApplicationGroupId) ? workSpace_Existing.properties.applicationGroupReferences : union(workSpace_Existing.properties.applicationGroupReferences, [varApplicationGroupId])
+
 var varHostPoolRdpPropertiesDomainServiceCheck = (identityServiceProvider == 'AAD') ? '${hostPoolRdpProperties};targetisaadjoined:i:1;enablerdsaadauth:i:1' : hostPoolRdpProperties
 var varRAppApplicationGroupsStandardApps = (preferredAppGroupType == 'RailApplications') ? [
   {
@@ -194,12 +207,12 @@ var varScalingPlanDiagnostic = [
 ]
 
 // =========== //
-// Deployments Commercial//
+// Deployments
 // =========== //
 
 // Hostpool.
 module hostPool '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/hostpools/deploy.bicep' = {
-  scope: resourceGroup('${workloadSubsId}', '${serviceObjectsRgName}')
+  scope: resourceGroup('${workloadSubsId}', '${varServiceObjectsRgName}')
   name: 'HostPool-${time}'
   params: {
     name: hostPoolName
@@ -231,8 +244,8 @@ module hostPool '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/hostpoo
 }
 
 // Application groups.
-module applicationGroups '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/applicationgroups/deploy.bicep' = [for applicationGroup in varApplicaitonGroups: {
-  scope: resourceGroup('${workloadSubsId}', '${serviceObjectsRgName}')
+module applicationGroups '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/applicationgroups/deploy.bicep' = [for applicationGroup in varApplicationGroups: {
+  scope: resourceGroup('${workloadSubsId}', '${varServiceObjectsRgName}')
   name: '${applicationGroup.name}-${time}'
   params: {
     name: applicationGroup.name
@@ -259,20 +272,24 @@ module applicationGroups '../../../../carml/1.3.0/Microsoft.DesktopVirtualizatio
 }]
 
 // Workspace.
+
+resource workSpace_Existing 'Microsoft.DesktopVirtualization/workspaces@2022-09-09' existing = if (!empty(existingAVDWorkspaceResourceId)) {
+  name: varAVDWorkspaceName
+  scope: resourceGroup('${workloadSubsId}', '${varServiceObjectsRgName}')
+}
+
 module workSpace '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/workspaces/deploy.bicep' = {
-  scope: resourceGroup('${workloadSubsId}', '${serviceObjectsRgName}')
+  scope: resourceGroup('${workloadSubsId}', '${varServiceObjectsRgName}')
   name: 'Workspace-${time}'
   params: {
-      name: workSpaceName
-      friendlyName: workSpaceFriendlyName
-      location: managementPlaneLocation
-      appGroupResourceIds: [
-        '/subscriptions/${workloadSubsId}/resourceGroups/${serviceObjectsRgName}/providers/Microsoft.DesktopVirtualization/applicationgroups/${applicationGroupName}'
-      ]
-      tags: tags
-      diagnosticWorkspaceId: alaWorkspaceResourceId
-      diagnosticLogsRetentionInDays: diagnosticLogsRetentionInDays
-      diagnosticLogCategoriesToEnable: varWorkspaceDiagnostic
+      name: empty(existingAVDWorkspaceResourceId) ? workSpaceName : workSpace_Existing.name
+      friendlyName: empty(existingAVDWorkspaceResourceId) ? workSpaceFriendlyName : workSpace_Existing.properties.friendlyName
+      location: empty(existingAVDWorkspaceResourceId) ? managementPlaneLocation : workSpace_Existing.location
+      appGroupResourceIds: varApplicationGroupIds
+      tags: empty(existingAVDWorkspaceResourceId) ? tags : workSpace_Existing.tags
+      diagnosticWorkspaceId: empty(existingAVDWorkspaceResourceId) ? alaWorkspaceResourceId : ''
+      diagnosticLogsRetentionInDays: empty(existingAVDWorkspaceResourceId) ? diagnosticLogsRetentionInDays : 365
+      diagnosticLogCategoriesToEnable: empty(existingAVDWorkspaceResourceId) ? varWorkspaceDiagnostic : []
   }
   dependsOn: [
     hostPool
@@ -282,7 +299,7 @@ module workSpace '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/worksp
 
 // Scaling plan.
 module scalingPlan '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/scalingplans/deploy.bicep' =  if (deployScalingPlan && (hostPoolType == 'Pooled'))  {
-  scope: resourceGroup('${workloadSubsId}', '${serviceObjectsRgName}')
+  scope: resourceGroup('${workloadSubsId}', '${varServiceObjectsRgName}')
   name: 'Scaling-Plan-${time}'
   params: {
       name:scalingPlanName
@@ -312,3 +329,4 @@ module scalingPlan '../../../../carml/1.3.0/Microsoft.DesktopVirtualization/scal
 // =========== //
 // Outputs //
 // =========== //
+

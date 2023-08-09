@@ -77,7 +77,7 @@ param avdDomainJoinUserName string = 'none'
 
 @sys.description('AVD session host domain join password. (Default: none)')
 @secure()
-param avdDomainJoinUserPassword string = 'none'
+param avdDomainJoinUserPassword string = ''
 
 @sys.description('OU path to join AVd VMs. (Default: "")')
 param avdOuPath string = ''
@@ -152,10 +152,10 @@ param deployPrivateEndpointKeyvaultStorage bool = true
 @sys.description('Create new  Azure private DNS zones for private endpoints. (Default: true)')
 param createPrivateDnsZones bool = true
 
-@sys.description('Use existing Azure private DNS zone for Azure files privatelink.file.core.windows.net or privatelink.file.core.usgovcloudapi.net. (Default: "")')
+@sys.description('Use existing Azure private DNS zone for Azure files. (Default: "")')
 param avdVnetPrivateDnsZoneFilesId string = ''
 
-@sys.description('Use existing Azure private DNS zone for key vault privatelink.vaultcore.azure.net or privatelink.vaultcore.usgovcloudapi.net. (Default: "")')
+@sys.description('Use existing Azure private DNS zone for key vault. (Default: "")')
 param avdVnetPrivateDnsZoneKeyvaultId string = ''
 
 @sys.description('Does the hub contains a virtual network gateway. (Default: false)')
@@ -496,14 +496,14 @@ var varSessionHostLocationAcronym = varLocations[varSessionHostLocationLowercase
 var varManagementPlaneLocationAcronym = varLocations[varManagementPlaneLocationLowercase].acronym
 var varLocations = loadJsonContent('../variables/locations.json')
 var varTimeZoneSessionHosts = varLocations[varSessionHostLocationLowercase].timeZone
-var varTimeZoneManagementPlane = varLocations[varManagementPlaneLocationLowercase].timeZone
 var varManagementPlaneNamingStandard = '${varDeploymentPrefixLowercase}-${varDeploymentEnvironmentLowercase}-${varManagementPlaneLocationAcronym}'
 var varComputeStorageResourcesNamingStandard = '${varDeploymentPrefixLowercase}-${varDeploymentEnvironmentLowercase}-${varSessionHostLocationAcronym}'
 var varDiskEncryptionSetName = avdUseCustomNaming ? '${ztDiskEncryptionSetCustomNamePrefix}-${varComputeStorageResourcesNamingStandard}-001' : 'des-zt-${varComputeStorageResourcesNamingStandard}-001'
 var varZtManagedIdentityName = avdUseCustomNaming ? '${ztManagedIdentityCustomName}-${varComputeStorageResourcesNamingStandard}-001' : 'id-zt-${varComputeStorageResourcesNamingStandard}-001'
 var varSessionHostLocationLowercase = toLower(replace(avdSessionHostLocation, ' ', ''))
 var varManagementPlaneLocationLowercase = toLower(replace(avdManagementPlaneLocation, ' ', ''))
-var varServiceObjectsRgName = avdUseCustomNaming ? avdServiceObjectsRgCustomName : 'rg-avd-${varManagementPlaneNamingStandard}-service-objects' // max length limit 90 characters
+// if existing workspace, then create all service objects in that resource group.
+var varServiceObjectsRgName = empty(existingAVDWorkspaceResourceId) ? avdUseCustomNaming ? avdServiceObjectsRgCustomName : 'rg-avd-${varManagementPlaneNamingStandard}-service-objects' : split(existingAVDWorkspaceResourceId, '/')[4] // max length limit 90 characters
 var varNetworkObjectsRgName = avdUseCustomNaming ? avdNetworkObjectsRgCustomName : 'rg-avd-${varComputeStorageResourcesNamingStandard}-network' // max length limit 90 characters
 var varComputeObjectsRgName = avdUseCustomNaming ? avdComputeObjectsRgCustomName : 'rg-avd-${varComputeStorageResourcesNamingStandard}-pool-compute' // max length limit 90 characters
 var varStorageObjectsRgName = avdUseCustomNaming ? avdStorageObjectsRgCustomName : 'rg-avd-${varComputeStorageResourcesNamingStandard}-storage' // max length limit 90 characters
@@ -762,7 +762,7 @@ var varAvdDefaultTags = {
 }
 //
 var varTelemetryId = 'pid-2ce4228c-d72c-43fb-bb5b-cd8f3ba2138e-${avdManagementPlaneLocation}'
-var verResourceGroups = [
+var varResourceGroups = empty(existingAVDWorkspaceResourceId) ? [
     {
         purpose: 'Service-Objects'
         name: varServiceObjectsRgName
@@ -777,15 +777,15 @@ var verResourceGroups = [
         enableDefaultTelemetry: false
         tags: createResourceTags ? union(varAllComputeStorageTags, varAvdDefaultTags) : union(varAvdDefaultTags, varAllComputeStorageTags)
     }
-    //{
-    //    purpose: 'Deployment-Temp'
-    //    name: varTempRgName
-    //    location: avdSessionHostLocation
-    //    enableDefaultTelemetry: false
-    //    tags: createResourceTags ? union(varAllComputeStorageTags, varAvdDefaultTags) : union(varAvdDefaultTags, varAllComputeStorageTags)
-    //}
-    
-]
+] : [
+    {
+        purpose: 'Pool-Compute'
+        name: varComputeObjectsRgName
+        location: avdSessionHostLocation
+        enableDefaultTelemetry: false
+        tags: createResourceTags ? union(varAllComputeStorageTags, varAvdDefaultTags) : union(varAvdDefaultTags, varAllComputeStorageTags)
+    }    
+] 
 
 // =========== //
 // Deployments //
@@ -820,7 +820,7 @@ module baselineNetworkResourceGroup '../../carml/1.3.0/Microsoft.Resources/resou
 }
 
 // Compute, service objects
-module baselineResourceGroups '../../carml/1.3.0/Microsoft.Resources/resourceGroups/deploy.bicep' = [for resourceGroup in verResourceGroups: {
+module baselineResourceGroups '../../carml/1.3.0/Microsoft.Resources/resourceGroups/deploy.bicep' = [for resourceGroup in varResourceGroups: {
     scope: subscription(avdWorkloadSubsId)
     name: '${resourceGroup.purpose}-${time}'
     params: {
@@ -912,7 +912,7 @@ module networking './modules/networking/deploy.bicep' = if (createAvdVnet || cre
 }
 
 // AVD management plane
-module managementPLane './modules/avdManagementPlane/deploy.bicep' = {
+module managementPlane './modules/avdManagementPlane/deploy.bicep' = {
     name: 'AVD-MGMT-Plane-${time}'
     params: {
         applicationGroupName: varApplicationGroupName
@@ -937,7 +937,7 @@ module managementPLane './modules/avdManagementPlane/deploy.bicep' = {
         managementPlaneLocation: avdManagementPlaneLocation
         serviceObjectsRgName: varServiceObjectsRgName
         startVmOnConnect: (avdHostPoolType == 'Pooled') ? avdDeployScalingPlan : avdStartVmOnConnect
-        workloadSubsId: avdWorkloadSubsId
+        workloadSubsId: empty(existingAVDWorkspaceResourceId) ? avdWorkloadSubsId : split(existingAVDWorkspaceResourceId, '/')[2]
         identityServiceProvider: avdIdentityServiceProvider
         applicationGroupIdentitiesIds: avdApplicationGroupIdentitiesIds
         applicationGroupIdentityType: avdApplicationGroupIdentityType
@@ -1290,7 +1290,7 @@ module sessionHosts './modules/avdSessionHosts/deploy.bicep' = [for i in range(1
         wrklKeyVault
         monitoringDiagnosticSettings
         availabilitySet
-        managementPLane
+        managementPlane
     ]
 }]
 
