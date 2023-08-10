@@ -1061,12 +1061,9 @@ module secretDomainJoinUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/sec
     name: 'Workload-KeyVault-Secret-domainJoinUserName-${time}'
     params: {
         name: 'domainJoinUserName'
-        keyVaultName: varWrklKvName
+        keyVaultName: wrklKeyVault.name
         value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserName : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserName') : 'AAD-Joined-Deployment-No-Domain-Credentials'
     }
-    dependsOn: [
-        wrklKeyVault
-    ]
 }
 
 module secretDomainJoinUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
@@ -1074,12 +1071,9 @@ module secretDomainJoinUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults
     name: 'Workload-KeyVault-Secret-domainJoinUserPassword-${time}'
     params: {
         name: 'domainJoinUserPassword'
-        keyVaultName: varWrklKvName
+        keyVaultName: wrklKeyVault.name
         value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserPassword : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserPassword') : 'AAD-Joined-Deployment-No-Domain-Credentials'
     }
-    dependsOn: [
-        wrklKeyVault
-    ]
 }
 
 module secretVmLocalUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
@@ -1087,12 +1081,9 @@ module secretVmLocalUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secret
     name: 'Workload-KeyVault-Secret-vmLocalUserName-${time}'
     params: {
         name: 'vmLocalUserName'
-        keyVaultName: varWrklKvName
+        keyVaultName: wrklKeyVault.name
         value: avdVmLocalUserName
     }
-    dependsOn: [
-        wrklKeyVault
-    ]
 }
 
 module secretVmLocalUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
@@ -1100,12 +1091,9 @@ module secretVmLocalUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/se
     name: 'Workload-KeyVault-Secret-vmLocalUserPassword-${time}'
     params: {
         name: 'vmLocalUserPassword'
-        keyVaultName: varWrklKvName
+        keyVaultName: wrklKeyVault.name
         value: avdVmLocalUserPassword
     }
-    dependsOn: [
-        wrklKeyVault
-    ]
 }
 
 // Management VM deployment

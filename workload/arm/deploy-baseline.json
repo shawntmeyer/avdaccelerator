@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.19.5.34762",
-      "templateHash": "16852085415115202630"
+      "templateHash": "9197316290383272021"
     },
     "name": "AVD Accelerator - Baseline Deployment",
     "description": "AVD Accelerator - Deployment Baseline"
@@ -29247,7 +29247,7 @@
             "value": "domainJoinUserName"
           },
           "keyVaultName": {
-            "value": "[variables('varWrklKvName')]"
+            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
           },
           "value": "[if(not(equals(parameters('avdIdentityServiceProvider'), 'AAD')), createObject('value', parameters('avdDomainJoinUserName')), if(not(empty(parameters('existingAVDWorkspaceResourceId'))), createObject('reference', createObject('keyVault', createObject('id', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.KeyVault/vaults', variables('varWrklKvName'))), 'secretName', 'domainJoinUserName')), createObject('value', 'AAD-Joined-Deployment-No-Domain-Credentials')))]"
         },
@@ -29565,7 +29565,7 @@
             "value": "domainJoinUserPassword"
           },
           "keyVaultName": {
-            "value": "[variables('varWrklKvName')]"
+            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
           },
           "value": "[if(not(equals(parameters('avdIdentityServiceProvider'), 'AAD')), createObject('value', parameters('avdDomainJoinUserPassword')), if(not(empty(parameters('existingAVDWorkspaceResourceId'))), createObject('reference', createObject('keyVault', createObject('id', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.KeyVault/vaults', variables('varWrklKvName'))), 'secretName', 'domainJoinUserPassword')), createObject('value', 'AAD-Joined-Deployment-No-Domain-Credentials')))]"
         },
@@ -29883,7 +29883,7 @@
             "value": "vmLocalUserName"
           },
           "keyVaultName": {
-            "value": "[variables('varWrklKvName')]"
+            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
           },
           "value": {
             "value": "[parameters('avdVmLocalUserName')]"
@@ -30203,7 +30203,7 @@
             "value": "vmLocalUserPassword"
           },
           "keyVaultName": {
-            "value": "[variables('varWrklKvName')]"
+            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
           },
           "value": {
             "value": "[parameters('avdVmLocalUserPassword')]"
