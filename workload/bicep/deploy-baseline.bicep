@@ -1064,6 +1064,9 @@ module secretDomainJoinUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/sec
         keyVaultName: varWrklKvName
         value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserName : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserName') : 'AAD-Joined-Deployment-No-Domain-Credentials'
     }
+    dependsOn: [
+        wrklKeyVault
+    ]
 }
 
 module secretDomainJoinUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
@@ -1074,6 +1077,9 @@ module secretDomainJoinUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults
         keyVaultName: varWrklKvName
         value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserPassword : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserPassword') : 'AAD-Joined-Deployment-No-Domain-Credentials'
     }
+    dependsOn: [
+        wrklKeyVault
+    ]
 }
 
 module secretVmLocalUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
@@ -1084,6 +1090,9 @@ module secretVmLocalUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secret
         keyVaultName: varWrklKvName
         value: avdVmLocalUserName
     }
+    dependsOn: [
+        wrklKeyVault
+    ]
 }
 
 module secretVmLocalUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/secrets/deploy.bicep' = {
@@ -1094,6 +1103,9 @@ module secretVmLocalUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/se
         keyVaultName: varWrklKvName
         value: avdVmLocalUserPassword
     }
+    dependsOn: [
+        wrklKeyVault
+    ]
 }
 
 // Management VM deployment
