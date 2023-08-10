@@ -99,14 +99,14 @@ param time string = utcNow()
 // =========== //
 // Variable declaration //
 // =========== //
-var varAzureCloudName = environment().name
-var varStorageSuffix = environment().suffixes.storage
-var varVaultSuffix = environment().suffixes.keyvaultDns
+
+var varStorageSuffix = startsWith(environment().suffixes.storage, '.') ? skip(environment().suffixes.storage, 1) : environment().suffixes.storage 
+var varVaultSuffix = startsWith(environment().suffixes.keyvaultDns, '.') ? skip(environment().suffixes.keyvaultDns, 1) : environment().suffixes.keyvaultDns 
 
 var varNetworkSecurityGroupDiagnostic = [
     'allLogs'
 ]
-var varVirtualNetworkLogsDiagnostic = varAzureCloudName == 'AzureUSGovernment' ? [
+var varVirtualNetworkLogsDiagnostic = environment().name == 'AzureUSGovernment' ? [
     ''
 ] : [
     'allLogs'

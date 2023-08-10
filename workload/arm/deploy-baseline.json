@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.19.5.34762",
-      "templateHash": "9197316290383272021"
+      "templateHash": "3101461888540178556"
     },
     "name": "AVD Accelerator - Baseline Deployment",
     "description": "AVD Accelerator - Deployment Baseline"
@@ -8296,7 +8296,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.19.5.34762",
-              "templateHash": "8996719391741596165"
+              "templateHash": "13186113489365553434"
             }
           },
           "parameters": {
@@ -8491,13 +8491,12 @@
             }
           },
           "variables": {
-            "varAzureCloudName": "[environment().name]",
-            "varStorageSuffix": "[environment().suffixes.storage]",
-            "varVaultSuffix": "[environment().suffixes.keyvaultDns]",
+            "varStorageSuffix": "[if(startsWith(environment().suffixes.storage, '.'), skip(environment().suffixes.storage, 1), environment().suffixes.storage)]",
+            "varVaultSuffix": "[if(startsWith(environment().suffixes.keyvaultDns, '.'), skip(environment().suffixes.keyvaultDns, 1), environment().suffixes.keyvaultDns)]",
             "varNetworkSecurityGroupDiagnostic": [
               "allLogs"
             ],
-            "varVirtualNetworkLogsDiagnostic": "[if(equals(variables('varAzureCloudName'), 'AzureUSGovernment'), createArray(''), createArray('allLogs'))]",
+            "varVirtualNetworkLogsDiagnostic": "[if(equals(environment().name, 'AzureUSGovernment'), createArray(''), createArray('allLogs'))]",
             "varVirtualNetworkMetricsDiagnostic": [
               "AllMetrics"
             ],
