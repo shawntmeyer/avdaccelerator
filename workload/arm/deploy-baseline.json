@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.19.5.34762",
-      "templateHash": "3101461888540178556"
+      "templateHash": "8541402009584129556"
     },
     "name": "AVD Accelerator - Baseline Deployment",
     "description": "AVD Accelerator - Deployment Baseline"
@@ -29246,7 +29246,7 @@
             "value": "domainJoinUserName"
           },
           "keyVaultName": {
-            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.Resources/deployments', format('Workload-KeyVault-{0}', parameters('time'))), '2022-09-01').outputs.name.value]"
           },
           "value": "[if(not(equals(parameters('avdIdentityServiceProvider'), 'AAD')), createObject('value', parameters('avdDomainJoinUserName')), if(not(empty(parameters('existingAVDWorkspaceResourceId'))), createObject('reference', createObject('keyVault', createObject('id', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.KeyVault/vaults', variables('varWrklKvName'))), 'secretName', 'domainJoinUserName')), createObject('value', 'AAD-Joined-Deployment-No-Domain-Credentials')))]"
         },
@@ -29564,7 +29564,7 @@
             "value": "domainJoinUserPassword"
           },
           "keyVaultName": {
-            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.Resources/deployments', format('Workload-KeyVault-{0}', parameters('time'))), '2022-09-01').outputs.name.value]"
           },
           "value": "[if(not(equals(parameters('avdIdentityServiceProvider'), 'AAD')), createObject('value', parameters('avdDomainJoinUserPassword')), if(not(empty(parameters('existingAVDWorkspaceResourceId'))), createObject('reference', createObject('keyVault', createObject('id', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.KeyVault/vaults', variables('varWrklKvName'))), 'secretName', 'domainJoinUserPassword')), createObject('value', 'AAD-Joined-Deployment-No-Domain-Credentials')))]"
         },
@@ -29882,7 +29882,7 @@
             "value": "vmLocalUserName"
           },
           "keyVaultName": {
-            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.Resources/deployments', format('Workload-KeyVault-{0}', parameters('time'))), '2022-09-01').outputs.name.value]"
           },
           "value": {
             "value": "[parameters('avdVmLocalUserName')]"
@@ -30202,7 +30202,7 @@
             "value": "vmLocalUserPassword"
           },
           "keyVaultName": {
-            "value": "[format('Workload-KeyVault-{0}', parameters('time'))]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', format('{0}', parameters('avdWorkloadSubsId')), format('{0}', variables('varServiceObjectsRgName'))), 'Microsoft.Resources/deployments', format('Workload-KeyVault-{0}', parameters('time'))), '2022-09-01').outputs.name.value]"
           },
           "value": {
             "value": "[parameters('avdVmLocalUserPassword')]"

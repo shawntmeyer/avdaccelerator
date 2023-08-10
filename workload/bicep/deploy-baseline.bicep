@@ -1061,7 +1061,7 @@ module secretDomainJoinUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/sec
     name: 'Workload-KeyVault-Secret-domainJoinUserName-${time}'
     params: {
         name: 'domainJoinUserName'
-        keyVaultName: wrklKeyVault.name
+        keyVaultName: wrklKeyVault.outputs.name
         value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserName : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserName') : 'AAD-Joined-Deployment-No-Domain-Credentials'
     }
 }
@@ -1071,7 +1071,7 @@ module secretDomainJoinUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults
     name: 'Workload-KeyVault-Secret-domainJoinUserPassword-${time}'
     params: {
         name: 'domainJoinUserPassword'
-        keyVaultName: wrklKeyVault.name
+        keyVaultName: wrklKeyVault.outputs.name
         value: (avdIdentityServiceProvider != 'AAD') ? avdDomainJoinUserPassword : !empty(existingAVDWorkspaceResourceId) ? wrklKeyVault_ex.getSecret('domainJoinUserPassword') : 'AAD-Joined-Deployment-No-Domain-Credentials'
     }
 }
@@ -1081,7 +1081,7 @@ module secretVmLocalUserName '../../carml/1.3.0/Microsoft.KeyVault/vaults/secret
     name: 'Workload-KeyVault-Secret-vmLocalUserName-${time}'
     params: {
         name: 'vmLocalUserName'
-        keyVaultName: wrklKeyVault.name
+        keyVaultName: wrklKeyVault.outputs.name
         value: avdVmLocalUserName
     }
 }
@@ -1091,7 +1091,7 @@ module secretVmLocalUserPassword '../../carml/1.3.0/Microsoft.KeyVault/vaults/se
     name: 'Workload-KeyVault-Secret-vmLocalUserPassword-${time}'
     params: {
         name: 'vmLocalUserPassword'
-        keyVaultName: wrklKeyVault.name
+        keyVaultName: wrklKeyVault.outputs.name
         value: avdVmLocalUserPassword
     }
 }
