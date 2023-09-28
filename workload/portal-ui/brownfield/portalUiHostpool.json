@@ -4,7 +4,7 @@
         "kind": "Form",
         "properties": {
             "isWizard": false,
-            "title": "Azure Virtual Desktop - Landing Zone Accelerator (LZA) - Baseline",
+            "title": "Azure Virtual Desktop - Landing Zone Accelerator (LZA) - Deploy New Host Pool",
             "steps": [
                 {
                     "name": "basics",
@@ -58,6 +58,15 @@
                             "visible": true,
                             "label": "Deployment Specs",
                             "elements": [
+                                {
+                                    "name": "deploymentPrefixWarning",
+                                    "type": "Microsoft.Common.InfoBox",
+                                    "visible": true,
+                                    "options": {
+                                        "text": "When deploying a new host pool using this UI, it is critical that you do not select the same prefix used previously as it will update an existing hostpool.",
+                                        "style": "Warning"
+                                    }
+                                },
                                 {
                                     "name": "deploymentPrefix",
                                     "type": "Microsoft.Common.TextBox",
@@ -309,13 +318,13 @@
                     "label": "Management plane",
                     "elements": [
                         {
-                            "name": "managementPlaneWorkspaceSettings",
+                            "name": "managementPlaneReuseSettings",
                             "type": "Microsoft.Common.Section",
                             "visible": true,
-                            "label": "Workspace Selection",
+                            "label": "AVD Workspace and Key Vault Selection",
                             "elements": [
                                 {
-                                    "name": "avdWorkspace",
+                                    "name": "deployNewAVDWorkspace",
                                     "type": "Microsoft.Common.OptionsGroup",
                                     "visible": true,
                                     "label": "AVD Workspace",
@@ -338,18 +347,58 @@
                                 {
                                     "name": "avdWorkspaceWarning",
                                     "type": "Microsoft.Common.InfoBox",
-                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, false)]",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, false)]",
                                     "options": {
                                         "text": "When using an existing workspace, all new management plane resources will be deployed to the same resource group as the existing workspace.",
                                         "style": "Warning"
                                     }
                                 },
                                 {
-                                    "name": "avdExistingWorkspaceSelection",
+                                    "name": "existingAVDWorkspaceSelection",
                                     "type": "Microsoft.Solutions.ResourceSelector",
-                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, false)]",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, false)]",
                                     "label": "Existing workspace",
                                     "resourceType": "Microsoft.DesktopVirtualization/workspaces",
+                                    "constraints": {
+                                        "required": true
+                                    }
+                                },
+                                {
+                                    "name": "deployNewKeyVault",
+                                    "type": "Microsoft.Common.OptionsGroup",
+                                    "visible": true,
+                                    "label": "Key Vault",
+                                    "defaultValue": "New",
+                                    "toolTip": "Determines wether to deploy a new key vault or use an existing key vault.",
+                                    "constraints": {
+                                        "required": true,
+                                        "allowedValues": [
+                                            {
+                                                "label": "New",
+                                                "value": true
+                                            },
+                                            {
+                                                "label": "Existing",
+                                                "value": false
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "name": "keyVaultWarning",
+                                    "type": "Microsoft.Common.InfoBox",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewKeyVault, false)]",
+                                    "options": {
+                                        "text": "Pick the Keyvault in the same resource group as the chosen AVD Workspace for best results.",
+                                        "style": "Warning"
+                                    }
+                                },
+                                {
+                                    "name": "existingKeyVaultSelection",
+                                    "type": "Microsoft.Solutions.ResourceSelector",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewKeyVault, false)]",
+                                    "label": "Existing Key Vault",
+                                    "resourceType": "Microsoft.KeyVault/vaults",
                                     "constraints": {
                                         "required": true
                                     }
@@ -1599,7 +1648,7 @@
                                     "type": "Microsoft.Common.TextBox",
                                     "label": "Resource group",
                                     "toolTip": "Azure Virtual Desktop management plane resources (Workspace, Host pool, Application groups, Key vault) resource group custom name.",
-                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, true)]",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, true)]",
                                     "placeholder": "Example: rg-avd-app1-dev-use2-service-objects",
                                     "constraints": {
                                         "required": true,
@@ -1613,7 +1662,7 @@
                                     "label": "Workspace",
                                     "toolTip": "Workspace custom name.",
                                     "placeholder": "Example: vdws-app1-dev-use2-001",
-                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, true)]",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, true)]",
                                     "constraints": {
                                         "required": true,
                                         "regex": "^[a-z0-9A-Z-]{1,64}$",
@@ -1626,7 +1675,7 @@
                                     "label": "Workspace (Friendly name)",
                                     "toolTip": "Workspace custom friendly name.",
                                     "placeholder": "Example: App1 - Dev - East US 2 - 001",
-                                    "visible": "[equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, true)]",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, true)]",
                                     "constraints": {
                                         "required": true,
                                         "regex": "^[a-z0-9A-Z-]{1,64}$",
@@ -1699,6 +1748,7 @@
                                     "label": "Key vault prefix",
                                     "toolTip": "Key vault prefix custom name.",
                                     "placeholder": "Example: kv",
+                                    "visible": "[equals(steps('managementPlane').managementPlaneReuseSettings.deployNewKeyVault, true)]",
                                     "constraints": {
                                         "required": true,
                                         "regex": "^[a-z0-9A-Z-]{1,5}$",
@@ -2391,9 +2441,10 @@
                 "privateEndpointNetworksecurityGroupCustomName": "[if(equals(steps('resourceNaming').resourceNamingSelection, true), steps('resourceNaming').resourceNamingNetwork.privateEndpointNetworkSecurityGroupCustomName, 'no')]",
                 "privateEndpointRouteTableCustomName": "[if(equals(steps('resourceNaming').resourceNamingSelection, true), steps('resourceNaming').resourceNamingNetwork.privateEndpointRouteTableCustomName, 'no')]",
                 "avdApplicationSecurityGroupCustomName": "[if(equals(steps('resourceNaming').resourceNamingSelection, true), steps('resourceNaming').resourceNamingCompute.applicationSecurityGroupCustomName, 'no')]",
-                "existingAVDWorkspaceResourceId": "[if(equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, false), steps('managementPlane').managementPlaneWorkspaceSettings.avdExistingWorkspaceSelection.id, '')]",
-                "avdWorkSpaceCustomName": "[if(and(equals(steps('resourceNaming').resourceNamingSelection, true), equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, true)), steps('resourceNaming').resourceNamingAvdManagementPlane.workSpaceCustomName, 'no')]",
-                "avdWorkSpaceCustomFriendlyName": "[if(and(equals(steps('resourceNaming').resourceNamingSelection, true), equals(steps('managementPlane').managementPlaneWorkspaceSettings.avdWorkspace, true)), steps('resourceNaming').resourceNamingAvdManagementPlane.workSpaceCustomFriendlyName, 'no')]",
+                "existingAVDWorkspaceResourceId": "[if(equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, false), steps('managementPlane').managementPlaneReuseSettings.existingAVDWorkspaceSelection.id, '')]",
+                "existingKeyVaultResourceId": "[if(equals(steps('managementPlane').managementPlaneReuseSettings.deployNewKeyVault, false), steps('managementPlane').managementPlaneReuseSettings.existingKeyVaultSelection.id, '')]",
+                "avdWorkSpaceCustomName": "[if(and(equals(steps('resourceNaming').resourceNamingSelection, true), equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, true)), steps('resourceNaming').resourceNamingAvdManagementPlane.workSpaceCustomName, 'no')]",
+                "avdWorkSpaceCustomFriendlyName": "[if(and(equals(steps('resourceNaming').resourceNamingSelection, true), equals(steps('managementPlane').managementPlaneReuseSettings.deployNewAVDWorkspace, true)), steps('resourceNaming').resourceNamingAvdManagementPlane.workSpaceCustomFriendlyName, 'no')]",
                 "avdHostPoolCustomName": "[if(equals(steps('resourceNaming').resourceNamingSelection, true), steps('resourceNaming').resourceNamingAvdManagementPlane.hostPoolCustomName, 'no')]",
                 "avdHostPoolCustomFriendlyName": "[if(equals(steps('resourceNaming').resourceNamingSelection, true), steps('resourceNaming').resourceNamingAvdManagementPlane.hostPoolCustomFriendlyName, 'no')]",
                 "avdScalingPlanCustomName": "[if(equals(steps('resourceNaming').resourceNamingSelection, true), steps('resourceNaming').resourceNamingAvdManagementPlane.scalingPlanCustomName, 'no')]",

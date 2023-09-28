@@ -1,5 +1,4 @@
-metadata name = 'AVD Accelerator - Baseline Deployment'
-metadata description = 'AVD Accelerator - Deployment Baseline'
+
 
 targetScope = 'subscription'
 
@@ -350,8 +349,11 @@ param avdApplicationSecurityGroupCustomName string = 'asg-app1-dev-use2-001'
 @sys.description('AVD workspace custom name. (Default: vdws-app1-dev-use2-001)')
 param avdWorkSpaceCustomName string = 'vdws-app1-dev-use2-001'
 
-@sys.description('Existing Azure Virtual Desktop Workspace Resource ID. (Default: "")')
+@sys.description('Resource ID of the existing Azure Virtual Desktop Workspace. (Default: "")')
 param existingAVDWorkspaceResourceId string = ''
+
+@sys.description('Resource ID of the existing Key Vault used to store VM secrets located in the service objects Resource Group. (Default: "")')
+param existingKeyVaultResourceId string = ''
 
 @maxLength(64)
 @sys.description('AVD workspace custom friendly (Display) name. (Default: App1 - Dev - East US 2 - 001)')
